@@ -2,7 +2,7 @@ README? You don't need no stinkin' README.
 
 
 Asterisk::
-exten => 8889183108,n,TrySystem(/var/lib/asterisk/bin/cdr_gdocs/cdr2.php "${CALLERID(name)}" "${CALLERID(num)}")
+exten => _X.,n,TrySystem(/var/lib/asterisk/bin/cdr_gdocs/cdr2.php "${CALLERID(name)}" "${CALLERID(num)}")
 
 Daemon::
 Add /var/lib/asterisk/bin/cdr_gdocs/cdr_gdocs_daemon.php to /etc/rc.local
