@@ -10,11 +10,13 @@ do_log("CDR_GDOCS started");
 do_log("Environment: ".print_r($_ENV, true));
 do_log("Server: ".print_r($_SERVER, true));
 
+
+
 // Settings
 $email = 'brycec@qturbo.com';
 $password = 'rhtwlecsfdqofcbx';
 $spreadsheet = 'MEDITAB CALL LOG';
-$worksheet = 'Sheet 1';
+$worksheet = 'Log';
 
 do_log("Configured $email : $password / $spreadsheet / $worksheet");
 
@@ -52,7 +54,12 @@ do_log("Connected to Google.");
 $spreadsheet_query = new Zend_Gdata_Spreadsheets_DocumentQuery();
 $spreadsheet_query->setTitleExact($spreadsheet);
 $spreadsheet_query->setDocumentType('spreadsheets');
-$spreadsheet_feed = $gdClient->getSpreadsheetFeed($spreadsheet_query);
+try {
+	$spreadsheet_feed = $gdClient->getSpreadsheetFeed($spreadsheet_query);
+} catch (Zend_Gdata_App_Exception $e) {
+	do_log("Zend_Gdata_App_Exception: ". $e->getMessage() . "\n" . $e->getTraceAsString());
+	exit("Error: Zend_Gdata_App_Exception: ". $e->getMessage()."\n");
+}
 $spreadsheet_id = explode('/', $spreadsheet_feed->entries[0]->id->text);
 $spreadsheet_id = $spreadsheet_id[7];
 #echo "Spreadsheet ID: {$spreadsheet_id}\n";
@@ -64,7 +71,12 @@ $worksheet_query = new Zend_Gdata_Spreadsheets_DocumentQuery();
 $worksheet_query->setTitleExact($worksheet);
 $worksheet_query->setDocumentType('worksheets');
 $worksheet_query->setSpreadsheetKey($spreadsheet_id);
-$worksheet_feed = $gdClient->getSpreadsheetFeed($worksheet_query);
+try {
+	$worksheet_feed = $gdClient->getSpreadsheetFeed($worksheet_query);
+} catch (Zend_Gdata_App_Exception $e) {
+	do_log("Zend_Gdata_App_Exception: ". $e->getMessage() . "\n" . $e->getTraceAsString());
+	exit("Error: Zend_Gdata_App_Exception: ". $e->getMessage()."\n");
+}
 $worksheet_id = explode('/', $worksheet_feed->entries[0]->id->text);
 $worksheet_id = $worksheet_id[8];
 #echo "Worksheet ID: {$worksheet_id}\n";
@@ -77,8 +89,14 @@ $CIDNUM=$_SERVER['argv'][2];
 do_log("Name: $CIDNAME Number: $CIDNUM");
 
 // Insert a row and be done
-$rowData=array('date'=>date('r'), 'customer'=>$CIDNAME, 'phone'=>$CIDNUM);
-$res = $gdClient->insertRow($rowData, $spreadsheet_id, $worksheet_id);
+$rowData=array('date'=>date('m/d/Y H:i:s', $_SERVER['REQUEST_TIME']+3600), 'customer'=>$CIDNAME, 'phone'=>$CIDNUM);
+//var_dump($rowData, $spreadsheet_id, $worksheet_id);
+try {
+	$res = $gdClient->insertRow($rowData, $spreadsheet_id, $worksheet_id);
+} catch (Zend_Gdata_App_Exception $e) {
+	do_log("Zend_Gdata_App_Exception: ". $e->getMessage() . "\n" . $e->getTraceAsString());
+	exit("Error: Zend_Gdata_App_Exception: ". $e->getMessage()."\n");
+}
 $time[$timex++] = microtime(true);
 //var_dump($res);
 do_log("Row posted: $res");
