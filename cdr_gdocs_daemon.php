@@ -2,29 +2,33 @@
 <?php
 //Set the ticks
 declare(ticks = 1);
- 
+ini_set('track_errors', 'true');
+error_reporting(0);
+
+// Settings
+$config = parse_ini_file('cdr_gdocs_daemon.conf');
+if($config === false || !sizeof($config))
+	die("Unable to parse the configuration file: $php_errormsg\n");
+
 //Fork the current process
-$processID = pcntl_fork();
- 
+$pid = pcntl_fork();
+
 //Check to make sure the forked ok.
-if ( $processID == -1 )
-	echo "\n Error:  The process failed to fork. \n";
-else if ( $processID )	//This is the parent process.
+if($pid == -1)
+	die("Couldn't fork, uh oh!\n");
+elseif($pid)	//This is the parent process.
 	exit;
 
 //We're now in the child process.
 
 //Now, we detach from the terminal window, so that we stay alive when it is closed.
-if ( posix_setsid() == -1 ) {
-	echo "\n Error: Unable to detach from the terminal window. \n";
-}
+if(posix_setsid() == -1)
+	die("Unable to detache from the parent session.\n");
  
-//Get out process id now that we've detached from the window.
-$posixProcessID = posix_getpid();
-
 //Create a new file with the process id in it.
-file_put_contents("/var/run/cdr_gdocs_daemon.pid", $posixProcessID);
+file_put_contents("/var/run/cdr_gdocs_daemon.pid", posix_getpid());
 
+// setup signal handlers to actually catch and direct the signals
 function sig_handler($signo){
 	global $pids,$pidFileWritten;
 	switch($signo)
@@ -32,21 +36,19 @@ function sig_handler($signo){
 		case SIGTERM:
 		case SIGHUP:
 		case SIGINT:
-			exit();
+			do_log("Got signal $signo, exiting.");
+			exit;
 			break;
 	}
 }
-// setup signal handlers to actually catch and direct the signals
 pcntl_signal(SIGTERM, "sig_handler");
 pcntl_signal(SIGHUP,  "sig_handler");
 pcntl_signal(SIGINT, "sig_handler");
 
 
-
 error_reporting(E_ALL);
 ini_set('display_errors', 'false');
 ini_set('log_errors', 'true');
-ini_set('track_errors', 'true');
 ini_set('error_log', '/tmp/cdr_gdocs_daemon.log');
 function do_log($data) { return file_put_contents(ini_get('error_log'), trim($data)."\n", FILE_APPEND); }
 
@@ -56,13 +58,12 @@ do_log("Server: ".print_r($_SERVER, true));
 
 
 
-// Settings
-$email = 'brycec@qturbo.com';
-$password = 'rhtwlecsfdqofcbx';
-$spreadsheet = 'MEDITAB CALL LOG';
-$worksheet = 'Log';
+$email = $config['email'];
+$password = $config['password'];
+$spreadsheet = $config['spreadsheet'];
+$worksheet = $config['worksheet'];
 
-do_log("Configured $email : $password / $spreadsheet / $worksheet");
+do_log("Configured $email / $spreadsheet / $worksheet");
 
 set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__) . '/ZendGdata-1.11.11/library/');
 do_log("include_path updated");
