@@ -86,8 +86,14 @@ do_log("Zend libraries loaded.");
 
 
 $gdClient = retry(3, 30, 'gdata_auth', $email, $password);
+if($gdClient === false)
+	die(do_log("Couldn't log in to Google. Exiting."));
 $ss_id = retry(3, 30, 'load_spreadsheet', $gdClient, $spreadsheet);
+if($ss_id === false)
+	die(do_log("Couldn't find spreadsheet $spreadsheet. Exiting."));
 $ws_id = retry(3, 30, 'load_worksheet', $gdClient, $ss_id, $worksheet);
+if($ws_id === false)
+	die(do_log("Couldn't find worksheet $worksheet. Exiting."));
 
 while(true)
 {
@@ -108,8 +114,14 @@ while(true)
 		msg_send($queue, $msgtype+1, $message);
 		sleep(15);
 		$gdClient = retry(3, 30, 'gdata_auth', $email, $password);
+		if($gdClient === false)
+			die(do_log("Couldn't log back in to Google. Exiting."));
 		$ss_id = retry(3, 30, 'load_spreadsheet', $gdClient, $spreadsheet);
+		if($ss_id === false)
+			die(do_log("Couldn't find spreadsheet $spreadsheet. Exiting."));
 		$ws_id = retry(3, 30, 'load_worksheet', $gdClient, $ss_id, $worksheet);
+		if($ws_id === false)
+			die(do_log("Couldn't find worksheet $worksheet. Exiting."));
 	}
 	sleep(1);
 }

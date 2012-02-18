@@ -8,3 +8,7 @@ Daemon::
 Add /var/lib/asterisk/bin/cdr_gdocs/cdr_gdocs_daemon.php to /etc/rc.local
 Edit the cdr_gdocs_daemon.conf accordingly.
 
+
+TODO::
+Make the re-authentication more robust.
+Maybe move the initial login before the fork so we can error-out in front of the user.
