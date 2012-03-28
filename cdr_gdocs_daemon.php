@@ -204,7 +204,8 @@ function load_worksheet($gdClient, $spreadsheet_id, $worksheet)
 {
 	// Open the worksheet
 	$worksheet_query = new Zend_Gdata_Spreadsheets_DocumentQuery();
-	$worksheet_query->setTitleExact($worksheet);
+	$worksheet_query->setTitle($worksheet);
+	$worksheet_query->setTitleExact(true);
 	$worksheet_query->setDocumentType('worksheets');
 	$worksheet_query->setSpreadsheetKey($spreadsheet_id);
 	try {
@@ -212,6 +213,11 @@ function load_worksheet($gdClient, $spreadsheet_id, $worksheet)
 	} catch (Zend_Gdata_App_Exception $e) {
 		do_log("Zend_Gdata_App_Exception: ". $e->getMessage() . "\n" . $e->getTraceAsString());
 		//exit("Error: Zend_Gdata_App_Exception: ". $e->getMessage()."\n");
+		return false;
+	}
+	if(sizeof($worksheet_feed->entries) !== 1)
+	{
+		do_log("DocumentQuery to load the worksheet returned " . sizeof($worksheet_feed->entries) . " results. Aborting now before I write to the wrong worksheet.");
 		return false;
 	}
 	$worksheet_id = explode('/', $worksheet_feed->entries[0]->id->text);
