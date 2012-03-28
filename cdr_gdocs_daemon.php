@@ -178,8 +178,6 @@ function load_spreadsheet($gdClient, $spreadsheet)
 	$spreadsheet_query->setTitle($spreadsheet);
 	$spreadsheet_query->setTitleExact(true);
 	$spreadsheet_query->setDocumentType('spreadsheets');
-	//do_log("Query URL: {$spreadsheet_query->getQueryUrl()}");
-	//do_log("Query string: {$spreadsheet_query->getQueryString()}");
 	try {
 		$spreadsheet_feed = $gdClient->getSpreadsheetFeed($spreadsheet_query);
 	} catch (Zend_Gdata_App_Exception $e) {
@@ -187,7 +185,6 @@ function load_spreadsheet($gdClient, $spreadsheet)
 		//exit("Error: Zend_Gdata_App_Exception: ". $e->getMessage()."\n");
 		return false;
 	}
-	//do_log("Spreadsheet query matched " . sizeof($spreadsheet_feed->entries) . " spreadsheets.");
 	if(sizeof($spreadsheet_feed->entries) !== 1)
 	{
 		do_log("DocumentQuery to load the spreadsheet returned " . sizeof($spreadsheet_feed->entries) . " results. Aborting now before I write to the wrong spreadsheet.");
