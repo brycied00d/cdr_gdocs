@@ -30,13 +30,17 @@ file_put_contents("/var/run/cdr_gdocs_daemon.pid", posix_getpid());
 
 // setup signal handlers to actually catch and direct the signals
 function sig_handler($signo){
-	global $pids,$pidFileWritten;
+	global $queue;
 	switch($signo)
 	{
 		case SIGTERM:
 		case SIGHUP:
 		case SIGINT:
 			do_log("Got signal $signo, exiting.");
+			// We "never" destroy the queue - the child can still post to it and we
+			// will catch-up when we restart.
+			//if($queue)
+			//	msg_remove_queue($queue);
 			exit;
 			break;
 	}
