@@ -23,7 +23,10 @@ if(!$queue)
 	die();
 }
 
-$message = array('date'=>date('m/d/Y H:i:s', $_SERVER['REQUEST_TIME']+3600), 'customer'=>$CIDNAME, 'phone'=>$CIDNUM);
+// !DST compensation
+//$message = array('date'=>date('m/d/Y H:i:s', $_SERVER['REQUEST_TIME']+3600), 'customer'=>$CIDNAME, 'phone'=>$CIDNUM);
+ini_set('date.timezone', 'America/Phoenix');
+$message = array('date'=>date('m/d/Y H:i:s', $_SERVER['REQUEST_TIME']), 'customer'=>$CIDNAME, 'phone'=>$CIDNUM);
 do_log("Queueing message=".print_r($message, true));
 
 if(!msg_send($queue, 1, $message))
